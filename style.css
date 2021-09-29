@@ -1,18 +1,22 @@
 /* ------------- GLOBALS ------------ */
 
+:root {
+    --dark-blue: #363F5F;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    font-size: 93.75%;
+}
+
 body {
     background: #f0f2f5;
     font-family: 'Poppins', sans-serif;
-}
-
-:root {
-    --dark-blue: #363F5F;
 }
 
 /* ------------- HEADER ------------ */
@@ -84,8 +88,13 @@ header h1 {
     color: #969CB3;
 }
 
-#total, #total h3, #total p{
+.total-green, .total-green h3, .total-green p{
     background: #49AA26;
+    color: white;
+}
+
+.total-red, .total-red h3, .total-red p{
+    background: #e21111;
     color: white;
 }
 
@@ -107,8 +116,12 @@ header h1 {
     justify-content: space-between;
 }
 
-div.card {
-    word-break: normal;
+div.card.font h3 {
+    font-size: 100%;
+}
+
+div.card.font p {
+    font-size: 33.75px;
 }
 
 /* ------------- TABLE ------------ */
@@ -279,6 +292,8 @@ footer {
     padding: 4rem 0 2rem;
     color: var(--dark-blue);
     opacity: .6;
+    position: relative;
+    z-index: -10;
 }
 
 footer p {
@@ -286,7 +301,7 @@ footer p {
 }
 
 /* ------------- MEDIA ------------ */
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
     #balance {
         display: flex;
         justify-content: space-between;
@@ -296,6 +311,7 @@ footer p {
 
     div.card {
         flex-grow: 1;
+        overflow: hidden;
     }
 
     #transactions {
@@ -303,10 +319,23 @@ footer p {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     #transactions table {
         display: block;
         width: 100%;
         overflow-x: auto;
+    }
+}
+
+@media (max-width: 1020px) {
+    div.card.font p {
+        white-space: nowrap;
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 900px) {
+    div.card.font p {
+        font-size: 36px;
     }
 }

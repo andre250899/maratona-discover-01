@@ -6,6 +6,16 @@ const Modal = {
     }
 };
 
+const webStorage = {
+    get() {
+        return JSON.parse(localStorage.getItem('dev.finances-transactions')) || []
+    },
+
+    set(transactions) {
+        localStorage.setItem('dev.finances-transactions', JSON.stringify(transactions));
+    }
+}
+
 const Transactions = [
     {
         description: 'Desenvolvimento de site',
@@ -62,7 +72,7 @@ const Utils = {
 const Balance = {
     income() {
         let incomeValue = 0;
-        Transactions.forEach(transaction => {
+        Transaction.all.forEach(transaction => {
             if (transaction.value > 0) {
                 incomeValue += transaction.value;
             }
@@ -72,15 +82,28 @@ const Balance = {
 
     expense() {
         let expenseValue = 0;
-        Transactions.forEach(transaction => {
+        Transaction.all.forEach(transaction => {
             if (transaction.value < 0) {
                 expenseValue += transaction.value;
             }
         })
+        if (expenseValue === 0) {
+            expenseValue = -expenseValue;
+        }
+
         return expenseValue;
     },
 
     total() {
+        const total = Balance.income() + Balance.expense();
+        if (total < 0 ) {
+            DOM.totalRed();
+        } else if (total > 0){
+            DOM.totalGreen();
+        } else {
+            DOM.totalZero();
+        }
+
         return Balance.income() + Balance.expense()
     },
 
@@ -88,13 +111,16 @@ const Balance = {
 
 const Transaction = {
 
+    all: webStorage.get(),
+
     add(object) {
-        Transactions.push(object)
+        Transaction.all.push(object)
         App.reload();
     },
 
-    remove() {
-
+    remove(index) {
+        Transaction.all.splice(index, 1)
+        App.reload();
     },
 
     clear() {
@@ -113,12 +139,13 @@ const DOM = {
 
     addTransaction(transaction, index) {
         const tr = document.createElement('tr');
-        tr.innerHTML = DOM.innerHTMLTransaction(transaction);
+        tr.innerHTML = DOM.innerHTMLTransaction(transaction, index);
+        tr.dataset.index = index;
 
         DOM.transactionsContainer.appendChild(tr)
     },
 
-    innerHTMLTransaction(transaction) {
+    innerHTMLTransaction(transaction, index) {
         let innerClass = (transaction.value > 0 ? "income" : "expense")
 
         const html = `
@@ -126,10 +153,37 @@ const DOM = {
         <td class="${innerClass}">${Utils.formatValue(transaction.value)}</td>
         <td class="date">${transaction.date}</td>
         <td>
-            <img src="./assets/minus.svg" alt="Icone de deletar transação" draggable="false">
+            <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Icone de deletar transação" draggable="false">
         </td>`
 
         return html
+    },
+
+    totalRed() {
+        document.querySelector('#total')
+        .classList
+        .add('total-red');
+        document.querySelector('#total')
+        .classList
+        .remove('total-green');
+    },
+
+    totalGreen() {
+        document.querySelector('#total')
+        .classList
+        .remove('total-red');
+        document.querySelector('#total')
+        .classList
+        .add('total-green');
+    },
+
+    totalZero() {
+        document.querySelector('#total')
+        .classList
+        .remove('total-red');
+        document.querySelector('#total')
+        .classList
+        .remove('total-green');
     }
 };
 
@@ -182,30 +236,22 @@ const Form = {
         try {
             Form.validateFields();
             const transaction = Form.formatValues();
-            console.log(transaction)
             Transaction.add(transaction)
             Form.clearFields();
             Modal.toogle();
         } catch (error) {
             alert(error.message)
         }
-
-        
-
-        //salvar
-        //apagar os dados do formulário
-        //modal feche
-        //atualizar a aplicação
-
     }
 }
 
 const App = {
     init() {
-        DOM.addBalance();
-        Transactions.forEach(function(transaction) {
-            DOM.addTransaction(transaction);
+        Transaction.all.forEach(function(transaction, index) {
+            DOM.addTransaction(transaction, index);
         });
+        DOM.addBalance();
+        webStorage.set(Transaction.all);
     },
 
     reload() {
